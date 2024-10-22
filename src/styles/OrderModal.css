@@ -1,0 +1,464 @@
+/* 모달 배경 오버레이 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* 모달 콘텐츠 */
+.modal-content {
+  display: inline-flex;
+  padding: 29.609px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 23.029px;
+  border-radius: 26.475px;
+  border: 1.324px solid rgba(0, 0, 0, 0.20);
+  background: #FFF;
+  
+  width: 922px;
+  height: auto; /* 높이를 콘텐츠에 맞추도록 설정 */
+  max-width: 90%;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1000;
+  overflow: visible; /* 스크롤 제거 */
+}
+
+/* 모달 헤더 */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  color: #2D2E30;
+  font-family: Pretendard;
+  font-size: 24.674px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 142.9%; /* 35.26px */
+  letter-spacing: -0.493px;
+  height: 35px;
+}
+
+.modal-subText {
+  color: rgba(164, 166, 171, 0.80);
+  font-family: Pretendard;
+  font-size: 19.739px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 142.9%; /* 28.208px */
+  letter-spacing: -0.395px;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* 모달 바디 */
+.modal-body {
+  width: 100%;
+  gap: 20.3px;
+  overflow: visible; /* 스크롤 제거 */
+}
+
+.form-group {
+  margin-bottom: 23.03px;
+}
+
+
+.input-container {
+  position: relative;
+  margin-bottom: 23.03px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 24.674px;
+  top: 50%;
+  transform: translateY(-50%);
+  fill: #77E3AB;
+}
+
+.input-field {
+  width: 100%;
+  font-size: 20px;
+  color: #000000;
+  box-sizing: border-box;
+  padding: 20.973px 57.674px;
+  border-radius: 13.16px;
+  border: 1.234px solid #D2D3D7;
+  background: #FAFAFB;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.input-field::placeholder,
+.quantity-input::placeholder,
+select::placeholder,
+textarea::placeholder {
+  color: #B7BAC0;
+}
+
+textarea {
+  resize: none;
+}
+
+
+
+/* 메뉴 항목을 가로로 정렬 */
+.menu-select-container {
+  display: flex;
+  align-items: center;
+  border-radius: 13.16px;
+  border: 1.234px solid #D2D3D7;
+  background: #2D2E30;
+  padding: 20.973px 24.674px;
+  justify-content: space-between;
+}
+
+
+.menu-select {
+  color: #FFF;
+  background: #2D2E30;
+  border: none;
+  font-family: Pretendard;
+  font-size: 19.739px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 142.9%; /* 28.208px */
+  letter-spacing: -0.395px;
+  padding: 0%;
+  margin: 0%;
+}
+
+.quantity-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.quantity-input {
+  margin-left: 40px;
+  color: #FFF;
+  background: #2D2E30;
+  border: none;
+  font-family: Pretendard;
+  font-size: 19.739px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 142.9%; /* 28.208px */
+  letter-spacing: -0.395px;
+  padding: 0%;
+  width: 48px;
+}
+
+
+/* 상하 화살표 버튼 */
+.quantity-buttons {
+  display: flex;
+  flex-direction:row;
+}
+
+.quantity-btn {
+  background-color: #2D2E30;
+  color: #B7BAC0;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+  margin: 0px 0;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+.quantity-btn:hover {
+  background-color: #77E3AB;
+}
+
+/* 기본 화살표 스피너 숨기기 */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+
+.add-btn {
+  color: #B7BAC0;
+  background: #2D2E30;
+  border: none;
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 142.9%; /* 22.864px */
+  letter-spacing: 0.232px;
+  padding: 0%;
+  margin: 0 0 0 40px;
+  left: 26.67px;
+}
+
+.added-item{
+  display: flex;
+  width: 398px;
+  padding: 20.973px 24.674px;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 13.16px;
+  border: 1.234px solid #D2D3D7;
+  background: #FFF;
+  margin-top: 23.03px;
+}
+
+.input-field-note{
+  margin-top: 23.03px;
+  width: 100%;
+  font-size: 20px;
+  color: #000000;
+  box-sizing: border-box;
+  padding: 20.973px 24.74px;
+  border-radius: 13.16px;
+  border: 1.234px solid #D2D3D7;
+  background: #FAFAFB;
+  margin-bottom: 0;
+
+}
+
+.item_menu{
+  color: #2D2E30;
+  font-family: Pretendard;
+  font-size: 19.739px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 142.9%; /* 28.208px */
+  letter-spacing: -0.395px;
+}
+
+.item_quan{
+  color: #2D2E30;
+  font-family: Pretendard;
+  font-size: 19.739px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 142.9%; /* 28.208px */
+  letter-spacing: -0.395px;
+}
+
+.remove-btn{
+  background: none;
+  border: 0;
+  color: #B7BAC0;
+  font-family: Pretendard;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 142.9%; /* 22.864px */
+  letter-spacing: 0.232px;
+  padding: 0;
+}
+
+
+
+/* 서비스 타입과 날짜 선택 블록 */
+.service-type-datetime {
+  display: flex;
+  align-items: center;
+  background-color: #FAFAFB;
+  padding: 0;
+  border-radius: 13.16px;
+  border: 1.234px solid #D2D3D7;
+  justify-content: space-between;
+
+}
+
+
+.service-select {
+  display: flex;
+  align-items: center;
+  width: auto;
+  padding: 24.674px;
+  border: none;
+  border-radius: 13.16px 0 0 13.16px;
+  background-color: #FAFAFB;
+
+  gap: 13.16px;
+  position: relative;
+  color: #2D2E30;
+  font-family: Pretendard;
+  font-size: 19.739px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 142.9%; /* 28.208px */
+  letter-spacing: -0.395px;
+  margin-bottom: 0px;
+}
+
+
+.datetime-picker {
+  padding: 29px;
+  border: none;
+  margin-bottom: 0px;
+  color: #2D2E30;
+  font-family: Pretendard;
+  font-size: 19.739px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 142.9%; /* 28.208px */
+  letter-spacing: -0.395px;
+  width: auto;
+  
+  white-space: nowrap; /* 텍스트가 한 줄로 표시되도록 설정 */
+
+}
+
+/* 모달 푸터 */
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #ddd;
+  align-items: center;
+  align-self: stretch;
+}
+
+/* 버튼이 가로로 꽉 차게 */
+.modal-btn {
+  display: flex;
+  width: 100%; /* 가로로 꽉 차게 설정 */
+  height: 74.846px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 13.16px;
+  background: #77E3AB;
+  border: none; /* 테두리 없애기 */
+  color: #FFF;
+  font-family: Pretendard;
+  font-size: 23.029px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 142.9%; /* 32.909px */
+  letter-spacing: -0.461px;
+}
+
+.divider_21{
+  display: flex;
+  width: 863px;
+  height: 0px;
+  padding: 20.973px 24.674px;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 13.16px;
+  border: 1.234px solid rgba(210, 211, 215, 0.00);
+  background: rgba(45, 46, 48, 0.00);
+}
+
+
+/* 캘린더와 시간 선택창 간격 조정 */
+.react-datepicker__time-container {
+  position: absolute;
+  left: -85px; /* 캘린더 왼쪽으로 시간 선택 창 배치 */
+  border-left: 1px solid #ddd; /* 구분선을 추가하여 시각적으로 구분 */
+  background-color: #fff; /* 배경색을 깔끔하게 */
+}
+
+.react-datepicker__triangle {
+  display: none; /* 삼각형 제거 */
+}
+
+.react-datepicker__time-list {
+  padding: 10px; /* 시간 리스트에 여백 추가 */
+}
+
+.react-datepicker__time-list-item {
+  padding: 8px 10px; /* 아이템 여백 추가로 넉넉한 선택 영역 */
+  font-size: 14px; /* 글씨 크기 조금 줄여서 더 깔끔하게 */
+  color: #333; /* 글씨 색상 변경 */
+  cursor: pointer; /* 커서 변경 */
+}
+
+.react-datepicker__time-list-item:hover {
+  background-color: #f0f0f0; /* hover 효과 추가 */
+  color: #000; /* hover 시 텍스트 색상 변경 */
+}
+
+.react-datepicker__time-list-item--selected {
+  background-color: #007bff; /* 선택된 아이템 색상 */
+  color: #fff; /* 선택된 아이템 글씨 색상 */
+  font-weight: bold; /* 선택된 아이템 강조 */
+}
+
+.react-datepicker__current-month,
+.react-datepicker__header {
+  background-color: #f7f7f7; /* 헤더 배경 색상 변경 */
+  border-bottom: 1px solid #ddd; /* 헤더 아래 구분선 */
+  color: #333; /* 헤더 텍스트 색상 */
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: #007bff; /* 선택된 날짜 색상 */
+  color: white; /* 선택된 날짜 글씨 색상 */
+}
+
+.react-datepicker__day--hover {
+  background-color: #f0f0f0; /* hover 시 날짜 색상 */
+  color: black; /* hover 시 날짜 글씨 색상 */
+}
+
+.react-datepicker {
+  font-family: 'Arial', sans-serif; /* 전체 폰트 변경 */
+}
+
+/* 달 넘어가는 화살표 위치 수정 */
+.react-datepicker__navigation {
+  top: 10px; /* 화살표의 상단 위치 조정 */
+  width: 25px; /* 화살표 크기 조정 */
+  height: 25px; /* 화살표 크기 조정 */
+}
+
+.react-datepicker__navigation--previous {
+  left: 10px; /* 이전 달 화살표 왼쪽 여백 조정 */
+}
+
+.react-datepicker__navigation--next {
+  right: 10px; /* 다음 달 화살표 오른쪽 여백 조정 */
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #333; /* 화살표 색상 변경 */
+  border-width: 2px; /* 화살표 두께 변경 */
+}
+
+.react-datepicker__header {
+  position: relative; /* 화살표가 헤더 안에 제대로 정렬되도록 설정 */
+  padding-top: 20px; /* 상단 패딩으로 여유 공간 확보 */
+}
+
+/* 팝업 전반적인 레이아웃을 위한 추가 스타일 */
+.react-datepicker__month-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: black; /* 화살표 색상을 검정색으로 */
+  border-width: 2px; /* 화살표의 두께 조정 */
+}
+
+/* 전체 모달 스타일 조정 */
+.react-datepicker {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 모달 그림자 추가 */
+  border-radius: 8px; /* 모서리 둥글게 */
+}

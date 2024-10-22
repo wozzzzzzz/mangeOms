@@ -1,0 +1,41 @@
+.custom-date-picker {
+  position: relative;
+  display: inline-block;
+}
+
+.date-picker-button {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.date-picker-button:hover {
+  border-color: #ccc;
+}
+
+.date-icon {
+  margin-right: 8px;
+}
+
+.arrow-down {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+/* 캘린더가 절대 위치로 나타나도록 수정 */
+.react-datepicker {
+  position: absolute;
+  top: calc(100% + 10px); /* 버튼 바로 아래에 캘린더 표시 */
+  left: 0;
+  z-index: 1000; /* 캘린더가 다른 요소 위에 나타나도록 */
+  width: auto;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 10px;
+}

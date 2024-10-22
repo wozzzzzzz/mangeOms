@@ -1,0 +1,198 @@
+.orderItemContainer {
+    background-color: #ffffff;
+    border: 1px solid #00000033;
+    border-radius: 21.41px;
+    padding: 24.3px;
+    margin-bottom: 20px;
+    display:flexbox ;
+    flex-direction: column;
+    width: 430px;
+    height: fit-content;
+    overflow: visible;
+}
+
+
+.orderTitleSection {
+    position: relative; /* 드롭다운이 부모 컨테이너를 기준으로 위치하도록 설정 */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.orderTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2D2E30;
+    font-family: "Pretendard", sans-serif;  /* 프리텐다드 적용 */
+}
+
+.orderOptionsButton {
+    width: 29px;
+    height: 29px;
+}
+
+.orderStatusButtonsContainer {
+    display: flex;
+    gap: 10px;
+    margin-top: 19.41px;
+}
+
+.orderStatusButton {
+    padding: 4.291px 8.581px;
+    border-radius: 12px;
+    background-color: #4e596829;
+    color: #4E5968;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    font-family: "Pretendard", sans-serif;  /* 프리텐다드 적용 */
+}
+
+.orderDetailsSection {
+    display: flex;
+    flex-wrap: wrap; /* 아이템들을 가로로 배치하고, 필요할 경우 줄바꿈 */
+    gap: 10px;
+    margin-top: 19.41px;
+}
+
+
+.order-item {
+    font-family: "Pretendard", sans-serif;  /* 프리텐다드 적용 */
+    display: inline-flex;
+    align-items: center;
+    gap: 6.65px;
+    justify-content: space-between;
+    width: 184px; /* 텍스트 크기만큼만 박스 크기를 설정 */
+    border: 1px solid #D2D3D7;
+    border-radius: 8px;
+    padding: 16.96px 19.95px;
+}
+
+.order-item span {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+
+.orderNotesSection{
+    display: flex;
+    padding: 19.950px;
+    align-items: center;
+    gap: 6.651px;
+    border-radius: 10.642px;
+    border: 0.998px solid #D2D3D7;
+    background: #FAFAFB;
+    align-items: center;
+    margin-top: 19.41px;
+  }
+
+  .orderNotesText{
+    color: #B7BAC0;
+    font-family: Pretendard;
+    font-size: 15.963px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 142.9%;
+    letter-spacing: -0.319px;
+    margin: 0;
+  }
+  
+
+.SectionDivider {
+    height: 1px;
+    background-color: #D2D3D7;
+    margin: 20px 0;
+}
+
+.orderBottomSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.customerInfoSection {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.customerName {
+    font-size: 16px;
+    font-weight: bold;
+    color: rgba(45, 46, 48, 0.50);
+    font-family: "Pretendard", sans-serif;  /* 프리텐다드 적용 */
+}
+
+.customerPhoneNumber {
+    font-size: 14px;
+    color: rgba(45, 46, 48, 0.35);
+    font-family: "Pretendard", sans-serif;  /* 프리텐다드 적용 */
+}
+
+.checkbox input {
+    width: 37.2px;
+    height: 37.2px;
+    cursor: pointer;
+}
+
+.orderOptionsDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0%;
+    background-color: white;
+    border-radius: 8px;
+    z-index: 1; /* 충분히 큰 값으로 설정 */
+    width: auto;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+
+}
+
+.orderOptionsEdit {
+    display: flex;
+    align-items: center; 
+    width: 112px;   /* 주어진 너비 */
+    height: 48px;  /* 주어진 높이 */
+    padding: 12px 16px;  /* 상하 12px, 좌우 16px 패딩 */
+    background-color: #fff;  /* 배경색: rgb(229, 231, 235) */
+    color: #020617;  /* 텍스트 색상: rgb(2, 6, 23) */
+    font-family: "Pretendard", sans-serif;
+    font-size: 12px;
+    border: 0;  /* 테두리 없음 */
+    border-radius: 12px;  /* 주어진 모서리 둥글기 */
+    cursor: pointer;
+    transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);  /* 배경색 전환 */
+    outline: none;  /* 클릭 시 외곽선 제거 */
+    gap: 12px;
+}
+
+.orderOptionsEdit:hover {
+    background-color: #D1D5DB;  /* 호버 시 밝은 회색 */
+}
+
+.orderOptionsDelete {
+    display: flex;
+    align-items: center;
+    width: 112px;  /* 주어진 너비 */
+    height: 48px;  /* 주어진 높이 */
+    padding: 12px 16px;  /* 상하 12px, 좌우 16px 패딩 */
+    background-color: #fff;  /* 배경색: rgb(229, 231, 235) */
+    color: #DC2626;  /* 텍스트 색상: 흰색 */
+    font-family: "Pretendard", sans-serif;
+    font-size: 12px;
+    border: 0;  /* 테두리 없음 */
+    border-radius: 12px;  /* 주어진 모서리 둥글기 */
+    cursor: pointer;
+    transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);  /* 배경색 전환 */
+    outline: none;  /* 클릭 시 외곽선 제거 */
+    gap: 12px;
+}
+
+.orderOptionsDelete:hover {
+     background-color: #D1D5DB;  /* 호버 시 밝은 회색 */
+}
+
+/* 추가적으로 전체 텍스트에 프리텐다드 폰트를 일괄 적용 */
+body {
+    font-family: "Pretendard", sans-serif;
+}
+

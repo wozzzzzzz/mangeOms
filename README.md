@@ -38,3 +38,4 @@
 │
 └── **App.js**             # 전체 앱 구조를 구성하는 메인 컴포넌트
 ```# mangeOms
+# mangeOms
