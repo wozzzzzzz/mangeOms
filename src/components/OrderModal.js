@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { addDoc, updateDoc, doc, collection } from 'firebase/firestore';
+import React, { useState, useEffect, useCallback } from 'react';
+import { addDoc, updateDoc, doc, collection, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -10,7 +10,7 @@ const menuOptions = [
   "망굴세트 S", "망굴세트 M", "망굴세트 L",
   "종합세트 M", "종합세트 L",
   "함지선물세트 S", "함지선물세트 M", "함지선물세트 L",
-  "떡 케이크 S", "떡 케이크 M", "떡 케이크 L","이바지 떡",
+  "떡 케이크 S", "떡 케이크 M", "떡 케이크 L", "이바지 떡",
   "연잎밥", "전통식혜 500ml", "전통식혜 1L",
   "단호박식혜 500ml", "단호박식혜 1L"
 ];
@@ -25,17 +25,16 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
   const [paymentStatus, setPaymentStatus] = useState(order ? order.paymentStatus : '미결제');
   const [status, setStatus] = useState(order ? order.status : '준비중');
   const [note, setNote] = useState(order ? order.note : '');
-  const [selectedDatetime, setSelectedDatetime] = useState(new Date());
-
-  // 주문 수정일 경우 기존 저장된 날짜와 시간 설정
-  useEffect(() => {
+  const [selectedDatetime, setSelectedDatetime] = useState(() => {
     if (isEdit && order) {
-      const orderDate = new Date(`${order.date}T${order.time}`);
-      setSelectedDatetime(orderDate);
+      // order.date와 order.time을 결합하여 Date 객체 생성
+      const [year, month, day] = order.date.split('-');
+      const [hours, minutes] = order.time.split(':');
+      return new Date(year, month - 1, day, hours, minutes);
     } else {
-      setSelectedDatetime(new Date(selectedDate));  // 새로운 주문일 경우 선택된 날짜로 설정
+      return new Date(selectedDate);
     }
-  }, [isEdit, order, selectedDate]);
+  });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -45,33 +44,65 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
     if (name === 'note') setNote(value);
   };
 
-  const handleSaveOrder = async () => {
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
     const formattedItems = items.map(item => ({
       menu: item.menu,
       quantity: item.quantity
     }));
 
-    const formattedTime = `${selectedDatetime.getHours().toString().padStart(2, '0')}:${selectedDatetime.getMinutes().toString().padStart(2, '0')}`;
-    const selectedDateString = selectedDatetime.toISOString().split('T')[0];
+    // 한국 시간으로 날짜와 시간 포맷
+    const koreanDate = new Date(selectedDatetime.getTime() + (9 * 60 * 60 * 1000));
+    const formattedTime = `${koreanDate.getUTCHours().toString().padStart(2, '0')}:${koreanDate.getUTCMinutes().toString().padStart(2, '0')}`;
+    const formattedDate = koreanDate.toISOString().split('T')[0]; // 'YYYY-MM-DD' 형식
+
+    const orderData = {
+      name, 
+      phone, 
+      items: formattedItems, 
+      serviceType, 
+      paymentStatus, 
+      time: formattedTime, 
+      status, 
+      note,
+      date: formattedDate,
+      updatedAt: new Date().toISOString()
+    };
 
     try {
       if (isEdit) {
-        const orderRef = doc(db, 'orders', selectedDateString, 'orderList', order.id);
-        await updateDoc(orderRef, {
-          name, phone, items: formattedItems, serviceType, paymentStatus, time: formattedTime, status, note, date: selectedDateString
-        });
+        // 기존 주문 문서 확인
+        const oldOrderRef = doc(db, 'orders', order.date, 'orderList', order.id);
+        const oldOrderSnap = await getDoc(oldOrderRef);
+
+        if (oldOrderSnap.exists()) {
+          // 날짜가 변경되었는지 확인
+          if (order.date !== formattedDate) {
+            // 새 위치에 문서 생성
+            const newOrderRef = doc(collection(db, 'orders', formattedDate, 'orderList'));
+            await setDoc(newOrderRef, orderData);
+            // 기존 문서 삭제
+            await deleteDoc(oldOrderRef);
+          } else {
+            // 날짜가 변경되지 않았다면 기존 문서 업데이트
+            await updateDoc(oldOrderRef, orderData);
+          }
+        } else {
+          // 기존 문서가 없다면 새로 생성
+          const newOrderRef = doc(collection(db, 'orders', formattedDate, 'orderList'));
+          await setDoc(newOrderRef, orderData);
+        }
         console.log("주문 수정 완료!");
       } else {
-        await addDoc(collection(db, 'orders', selectedDateString, 'orderList'), {
-          name, phone, items: formattedItems, serviceType, paymentStatus, time: formattedTime, status, note, date: selectedDateString
-        });
+        // 새 주문 추가
+        await addDoc(collection(db, 'orders', formattedDate, 'orderList'), orderData);
         console.log("주문 추가 완료!");
       }
       onClose();
     } catch (error) {
       console.error("주문 저장 중 오류 발생: ", error);
     }
-  };
+  }, [isEdit, onClose, items, selectedDatetime, name, phone, serviceType, paymentStatus, status, note, order]);
 
   const addNewItem = (e) => {
     e.preventDefault();
@@ -89,8 +120,14 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
     setItems(items.filter((_, i) => i !== index));
   };
 
-  if (!show) return null;
+  useEffect(() => {
+    if (isEdit && order) {
+      // 주문 수정 모드일 때 한 번만 로그 출력
+      console.log('수정 모드 진입:', order);
+    }
+  }, [isEdit, order]);
 
+  if (!show) return null;
   return (
     <div className="modal-overlay">
       <div className="modal-content">
@@ -148,32 +185,15 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
               </select>
               
               <DatePicker
-                selected={selectedDatetime}
-                onChange={(date) => setSelectedDatetime(date)}
-                showTimeSelect
-                timeFormat="HH:mm"
-                timeIntervals={10}
-                dateFormat="MM월 dd일 HH:mm"
-                locale="ko"
-                className="input-field datetime-picker"
-                popperProps={{
-                  modifiers: [
-                    {
-                      name: 'offset',
-                      options: {
-                        offset: [0, 10], // 팝업 위치 조정
-                      },
-                    },
-                    {
-                      name: 'preventOverflow',
-                      options: {
-                        boundary: 'viewport',
-                      },
-                    },
-                  ],
-                }}
-                popperPlacement="bottom-start" // 팝업 위치 설정
-              />
+          selected={selectedDatetime}
+          onChange={(date) => setSelectedDatetime(date)}
+          showTimeSelect
+          timeFormat="HH:mm"
+          timeIntervals={10}
+          dateFormat="yyyy-MM-dd HH:mm"
+          className="input-field datetime-picker"
+          // locale 속성 제거
+        />
             </div>
 
             <div className='divider_21'></div>
@@ -217,7 +237,7 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
                </div> 
               </div>
 
-            {/* 추가된 메뉴 리스트 */}
+            {/* 추가된 메뉴 리스 */}
             {items.map((item, index) => (
               <div key={index} className="added-item">
                 <span className="item_menu">{item.menu}</span>
@@ -242,7 +262,7 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
 
         {/* 모달 푸터 */}
         <div className="modal-footer">
-          <button onClick={handleSaveOrder} className="modal-btn save-btn">
+          <button onClick={handleSubmit} className="modal-btn save-btn">
             {isEdit ? "주문 수정하기" : "주문 추가하기"}
           </button>
         </div>
@@ -251,4 +271,4 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
   );
 }
 
-export default OrderModal;
+export default React.memo(OrderModal);

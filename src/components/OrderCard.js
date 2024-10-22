@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import '../styles/OrderCard.css';
 import OrderOptionsDropdown from './OrderOptionsDropdown'; 
 
@@ -20,15 +20,33 @@ function OrderCard({ order, onEdit, onDelete, onCheckedChange, checked }) {
     setShowOptions(prev => !prev); 
   };
 
-  const handleEditClick = () => {
+  const handleEditClick = useCallback(() => {
     onEdit(order); 
-  };
+  }, [order, onEdit]);
 
   const handleDeleteClick = () => {
     if (window.confirm("정말로 이 주문을 삭제하시겠습니까?")) {
       onDelete(order); 
     }
   };
+
+  // 날짜와 시간 정보를 한 번만 계산
+  const orderDateTime = useMemo(() => {
+    if (order.date && order.time) {
+      const [year, month, day] = order.date.split('-');
+      const [hours, minutes] = order.time.split(':');
+      return new Date(year, month - 1, day, hours, minutes);
+    }
+    return null;
+  }, [order.date, order.time]);
+
+  // 컴포넌트가 마운트될 때 한 번만 로그 출력
+  useEffect(() => {
+    console.log('수정 중인 주문:', order);
+    if (orderDateTime) {
+      console.log('주문 날짜 및 시간:', orderDateTime);
+    }
+  }, [order, orderDateTime]);
 
   return (
     <div className="orderItemContainer">
@@ -90,4 +108,4 @@ function OrderCard({ order, onEdit, onDelete, onCheckedChange, checked }) {
   );
 }
 
-export default OrderCard;
+export default React.memo(OrderCard);

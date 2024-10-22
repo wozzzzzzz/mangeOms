@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, onSnapshot, doc, deleteDoc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, setDoc, query, orderBy } from 'firebase/firestore';
 import { db } from './firebase';
 import OrderModal from './components/OrderModal';
 import OrderCard from './components/OrderCard'; 
@@ -50,27 +50,38 @@ const CustomDatePicker = ({ selectedDate, setSelectedDate }) => {
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [completedOrders, setCompletedOrders] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(() => new Date(localStorage.getItem('selectedDate') || Date.now()));
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  });
   const [isOrderModalVisible, setIsOrderModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isEdit, setIsEdit] = useState(false);
   const [isCompletedOrdersVisible, setIsCompletedOrdersVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchOrders = (date) => {
+      const koreanDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+      const dateStr = koreanDate.toISOString().split('T')[0];
+      const ordersRef = collection(db, 'orders', dateStr, 'orderList');
+      const q = query(ordersRef, orderBy('time'));
 
-// 날짜 변경 시 해당 날짜의 주문 목록 가져오기
-useEffect(() => {
-  const fetchOrders = (date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    return onSnapshot(collection(db, 'orders', dateStr, 'orderList'), (snapshot) => {
-      setOrders(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    }, console.error);
-  };
+      return onSnapshot(q, (snapshot) => {
+        const fetchedOrders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        setOrders(fetchedOrders);
+        setIsLoading(false);
+      }, (error) => {
+        console.error("주문을 가져오는 중 오류 발생:", error);
+        setOrders([]);
+        setIsLoading(false);
+      });
+    };
 
-  const unsubscribe = fetchOrders(selectedDate);
-  return () => unsubscribe();
-}, [selectedDate]);
-
-
+    const unsubscribe = fetchOrders(selectedDate);
+    return () => unsubscribe();
+  }, [selectedDate]);
 
   // 완료된 주문 목록 가져오기
   useEffect(() => {
@@ -84,31 +95,27 @@ useEffect(() => {
   const toggleCompletedOrders = () => setIsCompletedOrdersVisible((prev) => !prev);
 
   const handleOrderChange = async (order, isChecked) => {
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const koreanDate = new Date(new Date(order.date).getTime() + (9 * 60 * 60 * 1000));
+    const dateStr = koreanDate.toISOString().split('T')[0];
     const orderRef = doc(db, 'orders', dateStr, 'orderList', order.id);
     const completedOrderRef = doc(db, 'completedOrders', order.id);
 
     try {
       if (isChecked) {
-        const snap = await getDoc(completedOrderRef);
-        if (!snap.exists()) {
-          await setDoc(completedOrderRef, { ...order, completedAt: new Date() });
-          await deleteDoc(orderRef);
-        }
+        await setDoc(completedOrderRef, order);
+        await deleteDoc(orderRef);
       } else {
-        await setDoc(orderRef, { ...order });
+        await setDoc(orderRef, order);
         await deleteDoc(completedOrderRef);
       }
     } catch (error) {
-      console.error('주문 업데이트 중 에러 발생: ', error);
+      console.error('주문 상태 변경 중 에러 발생: ', error);
     }
   };
 
-  
-
-
   const handleDeleteOrder = async (orderId) => {
-    const dateStr = selectedDate.toISOString().split('T')[0];
+    const koreanDate = new Date(selectedDate.getTime() + (9 * 60 * 60 * 1000));
+    const dateStr = koreanDate.toISOString().split('T')[0];
     try {
       await deleteDoc(doc(db, 'orders', dateStr, 'orderList', orderId));
     } catch (error) {
@@ -124,11 +131,14 @@ useEffect(() => {
     return acc;
   }, {});
 
-
   // 시간대별로 정렬 후, 같은 시간대 내에서는 분 단위로 정렬
   const sortedTimes = Object.keys(groupedOrders).sort((a, b) => {
     return parseInt(a) - parseInt(b); // "10시", "11시" 등 시간대를 숫자로 변환하여 비교
   });
+
+  if (isLoading) {
+    return <div>주문 목록을 불러오는 중...</div>;
+  }
 
   return (
     <div className="order-management">
