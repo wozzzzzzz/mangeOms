@@ -1,113 +1,71 @@
-.div_sticky_104 {
+/* OrderManagement.css */
+body {
+  font-family: "Pretendard", sans-serif;
+}
+
+.order-management {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  align-self: stretch;
-  padding: 34px 60px 34px 80px;
+  padding: 34px 60px;
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  width: 100%;
+  z-index: 100;
 }
 
-.div_sticky_h1{
+.header h1 {
   color: #2D2E30;
-  font-family: Pretendard;
   font-size: 40px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 142.9%;
-  letter-spacing: -0.8px;
-  margin-bottom: 0;
-
 }
 
-.Frame72{
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-
-.date-picker-container {
-  display: flex;
-  height: 46px;
-  padding: 13.731px 16.154px;
-  gap: 5.385px;
-}
-
-.div_flexGap_16{
+.controls {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.btn-complete-order{
-  padding: 8px 16px;
-  display: flex; /* flexbox로 설정 */
-  justify-content: center; /* 가로 중앙 정렬 */
-  align-items: center; /* 세로 중앙 정렬 */
-  gap: 8px;
-  cursor: pointer;
+.date-picker {
+  padding: 14px 16px;
+  border: 1px solid #D2D3D7;
   border-radius: 8px;
-  background: #FFF;
-  border: 1px solid #EAEBEC;
-  color: #2D2E30;
-  text-align: center;
-  font-family: Pretendard;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 142.9%; /* 22.864px */
-  letter-spacing: 0.232px;
-}
-
-.btn-add-order {
-  padding: 8px 16px;
-  display: flex; /* flexbox로 설정 */
-  justify-content: center; /* 가로 중앙 정렬 */
-  align-items: center; /* 세로 중앙 정렬 */
-  gap: 8px;
-  cursor: pointer;
-  border-radius: 8px;
-  background: #2D2E30;
-  border: none;
-  color: #FFF;
-  text-align: center;
-  font-family: Pretendard;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 142.9%; /* 22.864px */
-  letter-spacing: 0.232px;
-  display: flex; /* flexbox로 설정 */
-  justify-content: center; /* 텍스트 중앙 정렬 */
-  align-items: center; /* 세로 중앙 정렬 */
-  
-}
-
-.time-group {
-  padding: 34px 60px 0px 80px;
-}
-
-.titleSection {
-  align-items: center;
-  display: flex;
-  gap: 8px;
-  background-color: #ffffff;
-  align-items: center; /* 수직 중앙 정렬 */
-  padding-bottom: 24px;
-  padding-top: 20px;
-}
-
-.time-group-title {
-  font-size: 20px;
-  color: #2d2e30;
-  font-weight: 600;
-  letter-spacing: -0.8px;
-  margin: 0; /* 불필요한 여백 제거 */
 }
 
 .orders-list {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
+  padding-bottom: 20px;
+}
+
+/* Button Styles */
+.btn {
+  padding: 8px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-primary {
+  background: #2D2E30;
+  color: #FFF;
+  border: none;
+}
+
+.btn-secondary {
+  background: #FFF;
+  color: #2D2E30;
+  border: 1px solid #EAEBEC;
 }
 
 .order-card {
@@ -116,31 +74,44 @@
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  flex: 1;
   min-width: 250px;
+  flex: 1;
 }
 
-.order-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.order-card-body {
+.orders-container { 
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 40px;
+  padding: 0 60px 120px 60px;
+  margin-top: 20px;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
 }
 
-.order-card-footer {
+.hour-group {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 10px;
+  flex-direction: column;
+  gap: 20px;
 }
 
+.hour-title-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid #EAEBEC;
+}
 
-body {
-  font-family: "Pretendard", sans-serif;
+.hour-title {
+  color: #2D2E30;
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.orders-list {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
 }

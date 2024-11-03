@@ -1,26 +1,72 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import { collection, onSnapshot, addDoc, deleteDoc, updateDoc, doc, getDoc, getDocs, query, orderBy, limit, increment, where, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const OrderContext = createContext();
 
+const getSavedDate = () => {
+  const savedDate = localStorage.getItem('selectedDate');
+  return savedDate ? new Date(savedDate) : new Date();
+};
+
 const initialState = {
-  selectedDate: new Date(),
+  selectedDate: getSavedDate(),
   orders: [],
   completedOrders: [],
   peeNeeded: { white: 0, ssuk: 0 },
+  totalItemsNeeded: {},
+  individualItemCounts: {},
 };
+
+const SET_INDIVIDUAL_ITEM_COUNTS = 'SET_INDIVIDUAL_ITEM_COUNTS';
 
 function orderReducer(state, action) {
   switch (action.type) {
     case 'SET_SELECTED_DATE':
-      return { ...state, selectedDate: action.payload };
+      localStorage.setItem('selectedDate', action.payload.toISOString());
+      return {
+        ...state,
+        selectedDate: action.payload
+      };
     case 'SET_ORDERS':
       return { ...state, orders: action.payload };
     case 'SET_COMPLETED_ORDERS':
       return { ...state, completedOrders: action.payload };
     case 'SET_PEE_NEEDED':
       return { ...state, peeNeeded: action.payload };
+    case 'SET_TOTAL_ITEMS_NEEDED':
+      return { ...state, totalItemsNeeded: action.payload };
+    case SET_INDIVIDUAL_ITEM_COUNTS:
+      return {
+        ...state,
+        individualItemCounts: action.payload,
+      };
+    case 'COMPLETE_ORDER':
+      return {
+        ...state,
+        orders: state.orders.filter(order => order.id !== action.payload.id),
+        completedOrders: [...state.completedOrders, {
+          ...action.payload,
+          completedAt: new Date().toISOString()
+        }]
+      };
+    case 'UNCOMPLETE_ORDER':
+      const isDuplicate = state.orders.some(order => order.id === action.payload.id);
+      if (isDuplicate) {
+        return state;
+      }
+      
+      return {
+        ...state,
+        completedOrders: state.completedOrders.filter(
+          order => order.id !== action.payload.id
+        ),
+        orders: [...state.orders, action.payload].sort((a, b) => {
+          const timeA = a.time || '00:00';
+          const timeB = b.time || '00:00';
+          return timeA.localeCompare(timeB);
+        })
+      };
     default:
       return state;
   }
@@ -30,22 +76,18 @@ export function OrderProvider({ children }) {
   const [state, dispatch] = useReducer(orderReducer, initialState);
 
   useEffect(() => {
-    const savedDate = localStorage.getItem('selectedDate');
-    if (savedDate) {
-      dispatch({ type: 'SET_SELECTED_DATE', payload: new Date(savedDate) });
-    }
-  }, []);
+    const dateStr = state.selectedDate.toISOString().split('T')[0];
+    
+    const ordersRef = collection(db, 'orders', dateStr, 'orderList');
+    const unsubscribe = onSnapshot(ordersRef, (snapshot) => {
+      const ordersData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      dispatch({ type: 'SET_ORDERS', payload: ordersData });
+    });
 
-  useEffect(() => {
-    const fetchOrders = (date) => {
-      const dateStr = date.toISOString().split('T')[0];
-      return onSnapshot(collection(db, 'orders', dateStr, 'orderList'), (snapshot) => {
-        const orders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        dispatch({ type: 'SET_ORDERS', payload: orders });
-      }, console.error);
-    };
-
-    const unsubscribe = fetchOrders(state.selectedDate);
     return () => unsubscribe();
   }, [state.selectedDate]);
 
@@ -58,8 +100,148 @@ export function OrderProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
+  const setIndividualItemCounts = useCallback((counts) => {
+    dispatch({ type: SET_INDIVIDUAL_ITEM_COUNTS, payload: counts });
+  }, []);
+
+  const addOrder = useCallback(async (orderData) => {
+    try {
+      const dateStr = state.selectedDate.toISOString().split('T')[0];
+      const orderRef = collection(db, 'orders', dateStr, 'orderList');
+      
+      // Firebase에 주문 데이터 저장
+      const docRef = await addDoc(orderRef, {
+        ...orderData,
+        createdAt: new Date(),
+        status: '준비중'
+      });
+      
+      console.log('주문이 성공적으로 저장되었습니다:', docRef.id);
+      
+      // 상태 업데이트
+      dispatch({ 
+        type: 'SET_ORDERS', 
+        payload: [...state.orders, { ...orderData, id: docRef.id }] 
+      });
+
+    } catch (error) {
+      console.error('주문 저장 중 오류 발생:', error);
+      throw error;
+    }
+  }, [state.selectedDate, state.orders, dispatch]);
+
+  const handleDeleteOrder = useCallback(async (order) => {
+    try {
+      // 주문 삭제
+      const orderRef = doc(db, 'orders', order.date, 'orderList', order.id);
+      await deleteDoc(orderRef);
+
+      // 고객의 주문 횟수 감소 및 필요시 고객 정보 삭제
+      if (order.phone) {
+        const customerRef = doc(db, 'customers', order.phone);
+        const customerDoc = await getDoc(customerRef);
+        
+        if (customerDoc.exists()) {
+          const currentCount = customerDoc.data().orderCount || 0;
+          
+          if (currentCount <= 1) {
+            // 주문 횟수가 1 이하면 고객 정보 삭제
+            await deleteDoc(customerRef);
+          } else {
+            // 주문 횟수가 2 이상이면 카운트만 감소
+            await updateDoc(customerRef, {
+              orderCount: increment(-1)
+            });
+          }
+        }
+      }
+
+      dispatch({ type: 'DELETE_ORDER', payload: order });
+    } catch (error) {
+      console.error('주문 삭제 중 오류 발생:', error);
+      throw error;
+    }
+  }, [dispatch]);
+
+  const handleOrderChange = useCallback(async (orderData, isEdit = false) => {
+    try {
+      const dateStr = orderData.date;
+      const orderRef = doc(db, 'orders', dateStr, 'orderList', orderData.id);
+      await setDoc(orderRef, orderData);
+
+      // 고객 정보 업데이트 (새로운 주문일 때만)
+      if (!isEdit && orderData.phone) {
+        const customerRef = doc(db, 'customers', orderData.phone);
+        const customerDoc = await getDoc(customerRef);
+        
+        if (customerDoc.exists()) {
+          // 기존 고객 정보 업데이트 (orderCount는 증가시키고 나머지 정보만 업데이트)
+          await updateDoc(customerRef, {
+            orderCount: increment(1),
+            lastOrderDate: dateStr,
+            name: orderData.name
+          });
+        } else {
+          // 새로운 고객 정보 생성
+          await setDoc(customerRef, {
+            name: orderData.name,
+            phone: orderData.phone,
+            orderCount: 1,
+            lastOrderDate: dateStr
+          });
+        }
+      }
+
+      dispatch({ type: isEdit ? 'UPDATE_ORDER' : 'ADD_ORDER', payload: orderData });
+    } catch (error) {
+      console.error('주문 처리 중 오류 발생:', error);
+      throw error;
+    }
+  }, [dispatch]);
+
+  // 주문 완료/미완료 상태 변경 함수
+  const handleOrderStatusChange = useCallback(async (order, isCompleted) => {
+    try {
+      const dateStr = order.date;
+      
+      if (isCompleted) {
+        const orderRef = doc(db, 'orders', dateStr, 'orderList', order.id);
+        const completedOrderRef = doc(db, 'completedOrders', order.id);
+        
+        await setDoc(completedOrderRef, {
+          ...order,
+          completedAt: new Date().toISOString()
+        });
+        await deleteDoc(orderRef);
+        
+        dispatch({ type: 'COMPLETE_ORDER', payload: order });
+      } else {
+        const orderRef = doc(db, 'orders', dateStr, 'orderList', order.id);
+        const completedOrderRef = doc(db, 'completedOrders', order.id);
+        
+        const { completedAt, ...orderData } = order;
+        await setDoc(orderRef, orderData);
+        await deleteDoc(completedOrderRef);
+        
+        dispatch({ type: 'UNCOMPLETE_ORDER', payload: orderData });
+      }
+    } catch (error) {
+      console.error('주문 상태 변경 중 오류 발생:', error);
+      throw error;
+    }
+  }, [dispatch]);
+
   return (
-    <OrderContext.Provider value={{ state, dispatch }}>
+    <OrderContext.Provider
+      value={{
+        state,
+        dispatch,
+        setIndividualItemCounts,
+        handleDeleteOrder,
+        handleOrderChange,
+        handleOrderStatusChange
+      }}
+    >
       {children}
     </OrderContext.Provider>
   );

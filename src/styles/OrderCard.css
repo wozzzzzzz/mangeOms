@@ -1,14 +1,14 @@
 .orderItemContainer {
     background-color: #ffffff;
     border: 1px solid #00000033;
-    border-radius: 21.41px;
+    border-radius: 21.4px;
     padding: 24.3px;
-    margin-bottom: 20px;
-    display:flexbox ;
+    display: flexbox;
     flex-direction: column;
-    width: 430px;
+    width: 380px;
     height: fit-content;
     overflow: visible;
+    flex-shrink: 0;
 }
 
 
@@ -57,15 +57,19 @@
 
 
 .order-item {
-    font-family: "Pretendard", sans-serif;  /* 프리텐다드 적용 */
+    font-family: "Pretendard", sans-serif;
     display: inline-flex;
     align-items: center;
     gap: 6.65px;
     justify-content: space-between;
-    width: 184px; /* 텍스트 크기만큼만 박스 크기를 설정 */
+    width: 170px;
     border: 1px solid #D2D3D7;
     border-radius: 8px;
     padding: 16.96px 19.95px;
+    font-size: 14px;
+    text-align: center;
+    white-space: pre-wrap;
+    word-break: keep-all;
 }
 
 .order-item span {
@@ -179,7 +183,7 @@
     color: #DC2626;  /* 텍스트 색상: 흰색 */
     font-family: "Pretendard", sans-serif;
     font-size: 12px;
-    border: 0;  /* 테두리 없음 */
+    border: 0;  /* 테두 없음 */
     border-radius: 12px;  /* 주어진 모서리 둥글기 */
     cursor: pointer;
     transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);  /* 배경색 전환 */

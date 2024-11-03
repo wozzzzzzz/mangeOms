@@ -15,7 +15,7 @@ const menuOptions = [
   "단호박식혜 500ml", "단호박식혜 1L"
 ];
 
-function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
+function OrderModal({ show, onClose, selectedDate, order, isEdit, dispatch }) {
   const [name, setName] = useState(order ? order.name : '');
   const [phone, setPhone] = useState(order ? order.phone : '');
   const [items, setItems] = useState(order ? order.items : []);
@@ -44,65 +44,78 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit }) {
     if (name === 'note') setNote(value);
   };
 
-  const handleSubmit = useCallback(async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const formattedItems = items.map(item => ({
-      menu: item.menu,
-      quantity: item.quantity
-    }));
-
-    // 한국 시간으로 날짜와 시간 포맷
-    const koreanDate = new Date(selectedDatetime.getTime() + (9 * 60 * 60 * 1000));
-    const formattedTime = `${koreanDate.getUTCHours().toString().padStart(2, '0')}:${koreanDate.getUTCMinutes().toString().padStart(2, '0')}`;
-    const formattedDate = koreanDate.toISOString().split('T')[0]; // 'YYYY-MM-DD' 형식
-
-    const orderData = {
-      name, 
-      phone, 
-      items: formattedItems, 
-      serviceType, 
-      paymentStatus, 
-      time: formattedTime, 
-      status, 
-      note,
-      date: formattedDate,
-      updatedAt: new Date().toISOString()
-    };
-
+    
     try {
-      if (isEdit) {
-        // 기존 주문 문서 확인
-        const oldOrderRef = doc(db, 'orders', order.date, 'orderList', order.id);
-        const oldOrderSnap = await getDoc(oldOrderRef);
+      const orderData = {
+        name,
+        phone,
+        items,
+        serviceType,
+        paymentStatus,
+        note: note?.trim() || '',
+        date: selectedDatetime.toISOString().split('T')[0],
+        time: selectedDatetime.toLocaleTimeString('ko-KR', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: false 
+        }),
+        status: '준비중',
+        createdAt: new Date()
+      };
 
-        if (oldOrderSnap.exists()) {
-          // 날짜가 변경되었는지 확인
-          if (order.date !== formattedDate) {
-            // 새 위치에 문서 생성
-            const newOrderRef = doc(collection(db, 'orders', formattedDate, 'orderList'));
-            await setDoc(newOrderRef, orderData);
-            // 기존 문서 삭제
-            await deleteDoc(oldOrderRef);
-          } else {
-            // 날짜가 변경되지 않았다면 기존 문서 업데이트
-            await updateDoc(oldOrderRef, orderData);
-          }
-        } else {
-          // 기존 문서가 없다면 새로 생성
-          const newOrderRef = doc(collection(db, 'orders', formattedDate, 'orderList'));
-          await setDoc(newOrderRef, orderData);
-        }
-        console.log("주문 수정 완료!");
+      // 고객 정보 가져오기 및 업데이트
+      const customerRef = doc(db, 'customers', phone);
+      const customerDoc = await getDoc(customerRef);
+      
+      const customerData = {
+        name,
+        phone,
+        lastOrderDate: orderData.date,
+        updatedAt: new Date(),
+      };
+
+      if (!isEdit) {
+        customerData.orderCount = (customerDoc.exists() ? (customerDoc.data().orderCount || 0) : 0) + 1;
+      }
+
+      await setDoc(customerRef, customerData, { merge: true });
+
+      if (isEdit && order) {
+        // 주문 수정
+        const dateStr = orderData.date;
+        const orderRef = doc(db, 'orders', dateStr, 'orderList', order.id);
+        await updateDoc(orderRef, orderData);
+        
+        dispatch({ 
+          type: 'UPDATE_ORDER', 
+          payload: { 
+            ...orderData, 
+            id: order.id
+          } 
+        });
       } else {
         // 새 주문 추가
-        await addDoc(collection(db, 'orders', formattedDate, 'orderList'), orderData);
-        console.log("주문 추가 완료!");
+        const dateStr = orderData.date;
+        const orderRef = collection(db, 'orders', dateStr, 'orderList');
+        const docRef = await addDoc(orderRef, orderData);
+        
+        dispatch({ 
+          type: 'ADD_ORDER', 
+          payload: { 
+            ...orderData, 
+            id: docRef.id 
+          } 
+        });
       }
+      
       onClose();
     } catch (error) {
-      console.error("주문 저장 중 오류 발생: ", error);
+      console.error('주문 처리 중 오류 발생:', error);
+      alert('주문 처리 중 오류가 발생했습니다.');
     }
-  }, [isEdit, onClose, items, selectedDatetime, name, phone, serviceType, paymentStatus, status, note, order]);
+  };
 
   const addNewItem = (e) => {
     e.preventDefault();

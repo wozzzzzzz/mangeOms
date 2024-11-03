@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import '../styles/OrderCard.css';
 import OrderOptionsDropdown from './OrderOptionsDropdown'; 
+import { useOrder } from '../context/OrderContext';
+import { doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
-function OrderCard({ order, onEdit, onDelete, onCheckedChange, checked }) { 
+function OrderCard({ order, onEdit, onCheckedChange, checked }) { 
+  const { handleOrderStatusChange, handleDeleteOrder } = useOrder();
   const [isChecked, setIsChecked] = useState(checked);
   const [showOptions, setShowOptions] = useState(false); // 옵션 버튼을 클릭했을 때 드롭다운 표시
 
@@ -10,10 +14,22 @@ function OrderCard({ order, onEdit, onDelete, onCheckedChange, checked }) {
     setIsChecked(checked);
   }, [checked]);
 
-  const handleCheckboxChange = (event) => {
+  const handleCheckboxChange = async (event) => {
     const checked = event.target.checked;
-    setIsChecked(checked);
-    onCheckedChange(order, checked);
+    if (isChecked === checked) return;
+    
+    try {
+      setIsChecked(checked);
+      await handleOrderStatusChange(order, checked);
+      
+      if (onCheckedChange) {
+        onCheckedChange(order, checked);
+      }
+    } catch (error) {
+      console.error('주문 상태 변경 중 오류 발생:', error);
+      setIsChecked(!checked);
+      alert('주문 상태 변경 중 오류가 발생했습니다.');
+    }
   };
 
   const handleOptionsClick = () => {
@@ -24,9 +40,15 @@ function OrderCard({ order, onEdit, onDelete, onCheckedChange, checked }) {
     onEdit(order); 
   }, [order, onEdit]);
 
-  const handleDeleteClick = () => {
-    if (window.confirm("정말로 이 주문을 삭제하시겠습니까?")) {
-      onDelete(order); 
+  const handleDelete = async () => {
+    if (window.confirm('주문을 삭제하시겠습니까?')) {
+      try {
+        await handleDeleteOrder(order);
+        setShowOptions(false);
+      } catch (error) {
+        console.error('주문 삭제 중 오류 발생:', error);
+        alert('주문 삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -61,14 +83,19 @@ function OrderCard({ order, onEdit, onDelete, onCheckedChange, checked }) {
         {showOptions && (
           <OrderOptionsDropdown 
             handleEditClick={handleEditClick} 
-            handleDeleteClick={handleDeleteClick} 
+            handleDeleteClick={handleDelete} 
           />
         )}
       </div>
 
       <div className="orderStatusButtonsContainer">
         <span className="orderStatusButton">{order.paymentStatus}</span>
-        <span className="orderStatusButton">{order.serviceType}</span>
+        <span className="orderStatusButton" style={{
+          backgroundColor: order.serviceType === '퀵 서비스' ? '#313336' : '#4e596829',
+          color: order.serviceType === '퀵 서비스' ? '#fff' : '#4E5968'
+        }}>
+          {order.serviceType}
+        </span>
       </div>
 
       <div className="orderDetailsSection">
