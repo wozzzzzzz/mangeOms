@@ -29,7 +29,11 @@ function orderReducer(state, action) {
         selectedDate: action.payload
       };
     case 'SET_ORDERS':
-      return { ...state, orders: action.payload };
+      return {
+        ...state,
+        orders: action.payload.filter(order => !order.completed),
+        completedOrders: action.payload.filter(order => order.completed)
+      };
     case 'SET_COMPLETED_ORDERS':
       return { ...state, completedOrders: action.payload };
     case 'SET_PEE_NEEDED':
@@ -41,32 +45,28 @@ function orderReducer(state, action) {
         ...state,
         individualItemCounts: action.payload,
       };
-    case 'COMPLETE_ORDER':
+    case 'COMPLETE_ORDER': {
+      const updatedOrder = action.payload;
       return {
         ...state,
-        orders: state.orders.filter(order => order.id !== action.payload.id),
-        completedOrders: [...state.completedOrders, {
-          ...action.payload,
-          completedAt: new Date().toISOString()
-        }]
+        orders: state.orders.filter(order => order.id !== updatedOrder.id),
+        completedOrders: [
+          ...state.completedOrders.filter(order => order.id !== updatedOrder.id),
+          updatedOrder
+        ]
       };
-    case 'UNCOMPLETE_ORDER':
-      const isDuplicate = state.orders.some(order => order.id === action.payload.id);
-      if (isDuplicate) {
-        return state;
-      }
-      
+    }
+    case 'UNCOMPLETE_ORDER': {
+      const updatedOrder = action.payload;
       return {
         ...state,
-        completedOrders: state.completedOrders.filter(
-          order => order.id !== action.payload.id
-        ),
-        orders: [...state.orders, action.payload].sort((a, b) => {
-          const timeA = a.time || '00:00';
-          const timeB = b.time || '00:00';
-          return timeA.localeCompare(timeB);
-        })
+        completedOrders: state.completedOrders.filter(order => order.id !== updatedOrder.id),
+        orders: [
+          ...state.orders.filter(order => order.id !== updatedOrder.id),
+          updatedOrder
+        ]
       };
+    }
     default:
       return state;
   }
@@ -116,7 +116,7 @@ export function OrderProvider({ children }) {
         status: '준비중'
       });
       
-      console.log('주문이 성공적으로 저장되었습니다:', docRef.id);
+      console.log('주문이 성공으로 저장되었습니다:', docRef.id);
       
       // 상태 업데이트
       dispatch({ 
@@ -202,46 +202,31 @@ export function OrderProvider({ children }) {
   // 주문 완료/미완료 상태 변경 함수
   const handleOrderStatusChange = useCallback(async (order, isCompleted) => {
     try {
-      const dateStr = order.date;
-      
-      if (isCompleted) {
-        const orderRef = doc(db, 'orders', dateStr, 'orderList', order.id);
-        const completedOrderRef = doc(db, 'completedOrders', order.id);
-        
-        await setDoc(completedOrderRef, {
-          ...order,
-          completedAt: new Date().toISOString()
-        });
-        await deleteDoc(orderRef);
-        
-        dispatch({ type: 'COMPLETE_ORDER', payload: order });
-      } else {
-        const orderRef = doc(db, 'orders', dateStr, 'orderList', order.id);
-        const completedOrderRef = doc(db, 'completedOrders', order.id);
-        
-        const { completedAt, ...orderData } = order;
-        await setDoc(orderRef, orderData);
-        await deleteDoc(completedOrderRef);
-        
-        dispatch({ type: 'UNCOMPLETE_ORDER', payload: orderData });
-      }
+      const updatedOrder = { ...order, completed: isCompleted };
+      const orderRef = doc(db, 'orders', order.date, 'orderList', order.id);
+      await updateDoc(orderRef, { completed: isCompleted });
+
+      dispatch({ 
+        type: isCompleted ? 'COMPLETE_ORDER' : 'UNCOMPLETE_ORDER', 
+        payload: updatedOrder 
+      });
     } catch (error) {
       console.error('주문 상태 변경 중 오류 발생:', error);
       throw error;
     }
   }, [dispatch]);
 
+  const value = {
+    state,
+    dispatch,
+    handleOrderChange,
+    handleDeleteOrder,
+    handleOrderStatusChange,
+    setIndividualItemCounts
+  };
+
   return (
-    <OrderContext.Provider
-      value={{
-        state,
-        dispatch,
-        setIndividualItemCounts,
-        handleDeleteOrder,
-        handleOrderChange,
-        handleOrderStatusChange
-      }}
-    >
+    <OrderContext.Provider value={value}>
       {children}
     </OrderContext.Provider>
   );

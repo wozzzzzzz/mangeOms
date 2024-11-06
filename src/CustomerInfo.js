@@ -3,6 +3,7 @@ import { Table, Input, Space } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
+import { Link } from 'react-router-dom';
 
 const CustomerInfo = () => {
   const [customers, setCustomers] = useState([]);
@@ -43,6 +44,9 @@ const CustomerInfo = () => {
       dataIndex: 'name',
       key: 'name',
       sorter: (a, b) => a.name.localeCompare(b.name),
+      render: (text, record) => (
+        <Link to={`/customer/${record.id}`}>{text}</Link>
+      ),
     },
     {
       title: '연락처',

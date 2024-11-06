@@ -1,0 +1,42 @@
+.customer-detail {
+    padding: 20px;
+  }
+  
+  .back-button {
+    margin-bottom: 20px;
+  }
+  
+  .customer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .customer-info h2 {
+    margin: 0;
+  }
+  
+  .memo-input {
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  .order-summary {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .order-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .order-table th, .order-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+  
+  .order-table th {
+    background-color: #f2f2f2;
+  }
