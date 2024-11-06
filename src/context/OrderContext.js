@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { collection, onSnapshot, addDoc, deleteDoc, updateDoc, doc, getDoc, getDocs, query, orderBy, limit, increment, where, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { itemsPerMenu } from '../constants/menuItems';
+
 
 const OrderContext = createContext();
 
@@ -16,6 +18,14 @@ const initialState = {
   peeNeeded: { white: 0, ssuk: 0 },
   totalItemsNeeded: {},
   individualItemCounts: {},
+  actualPeeCount: {
+    흰피: 0,
+    쑥피: 0
+  },
+  remainingPee: {
+    흰피: 0,
+    쑥피: 0
+  }
 };
 
 const SET_INDIVIDUAL_ITEM_COUNTS = 'SET_INDIVIDUAL_ITEM_COUNTS';
@@ -67,10 +77,31 @@ function orderReducer(state, action) {
         ]
       };
     }
+    case 'SET_ACTUAL_PEE_COUNT':
+      return {
+        ...state,
+        actualPeeCount: action.payload
+      };
+      
+    case 'SET_REMAINING_PEE':
+      return {
+        ...state,
+        remainingPee: action.payload
+      };
+      
     default:
       return state;
   }
 }
+
+// 개별 주문의 떡피 사용량 계산 함수
+const calculatePeeForOrder = (order) => {
+  const menu = itemsPerMenu[order.menu];
+  return {
+    흰피: (menu?.흰피 || 0) * order.quantity,
+    쑥피: (menu?.쑥피 || 0) * order.quantity
+  };
+};
 
 export function OrderProvider({ children }) {
   const [state, dispatch] = useReducer(orderReducer, initialState);
@@ -202,10 +233,19 @@ export function OrderProvider({ children }) {
   // 주문 완료/미완료 상태 변경 함수
   const handleOrderStatusChange = useCallback(async (order, isCompleted) => {
     try {
+      const dateStr = order.date || state.selectedDate.toISOString().split('T')[0];
       const updatedOrder = { ...order, completed: isCompleted };
-      const orderRef = doc(db, 'orders', order.date, 'orderList', order.id);
-      await updateDoc(orderRef, { completed: isCompleted });
+      
+      // Firebase 문서 경로 수정
+      const orderRef = doc(db, 'orders', dateStr, 'orderList', order.id);
+      
+      // Firebase 업데이트
+      await updateDoc(orderRef, {
+        completed: isCompleted,
+        updatedAt: new Date()
+      });
 
+      // 로컬 상태 업데이트
       dispatch({ 
         type: isCompleted ? 'COMPLETE_ORDER' : 'UNCOMPLETE_ORDER', 
         payload: updatedOrder 
@@ -214,7 +254,7 @@ export function OrderProvider({ children }) {
       console.error('주문 상태 변경 중 오류 발생:', error);
       throw error;
     }
-  }, [dispatch]);
+  }, [dispatch, state.selectedDate]);
 
   const value = {
     state,

@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Input, Space } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
+import { Table, Input, Space, Button } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 const CustomerInfo = () => {
   const [customers, setCustomers] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('전체');
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -16,10 +17,11 @@ const CustomerInfo = () => {
         const customersRef = collection(db, 'customers');
         const customersSnapshot = await getDocs(customersRef);
         
-        const customersList = customersSnapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: doc.id
-        }));
+        const customersList = customersSnapshot.docs.map(doc => {
+          const data = doc.data();
+          const classification = classifyCustomer(data);
+          return { ...data, classification, id: doc.id };
+        });
 
         setCustomers(customersList);
         setLoading(false);
@@ -32,11 +34,37 @@ const CustomerInfo = () => {
     fetchCustomers();
   }, []);
 
-  // 검색 기능
-  const filteredCustomers = customers.filter(customer => 
-    customer.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-    customer.phone?.includes(searchText)
-  );
+  const classifyCustomer = (customer) => {
+    const today = new Date();
+    const lastOrderDate = new Date(customer.lastOrderDate);
+    const monthsSinceLastOrder = (today.getFullYear() - lastOrderDate.getFullYear()) * 12 + (today.getMonth() - lastOrderDate.getMonth());
+
+    if (customer.orderCount === 1) {
+      return '첫방문';
+    } else if (customer.orderCount >= 2 && customer.orderCount <= 4) {
+      return '예비 단골';
+    } else if (customer.orderCount >= 5) {
+      return '단골';
+    } else if (monthsSinceLastOrder >= 6) {
+      return '뜸한 고객';
+    } else {
+      return '기타';
+    }
+  };
+
+  const handleSearch = (e) => {
+    setSearchText(e.target.value);
+  };
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter);
+  };
+
+  const filteredCustomers = customers.filter(customer => {
+    const matchesSearch = customer.name?.toLowerCase().includes(searchText.toLowerCase()) || customer.phone?.includes(searchText);
+    const matchesFilter = filter === '전체' || customer.classification === filter;
+    return matchesSearch && matchesFilter;
+  });
 
   const columns = [
     {
@@ -67,26 +95,29 @@ const CustomerInfo = () => {
     }
   ];
 
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>고객 정보 관리</h2>
-      
+    <div>
+      <h2>고객 목록</h2>
       <Space style={{ marginBottom: 16 }}>
         <Input
-          placeholder="고객명 또는 연락처 검색"
+          placeholder="검색"
+          value={searchText}
+          onChange={handleSearch}
           prefix={<SearchOutlined />}
-          onChange={(e) => setSearchText(e.target.value)}
-          style={{ width: 200 }}
         />
       </Space>
-
-      <Table
-        columns={columns}
-        dataSource={filteredCustomers}
-        rowKey="phone"
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-      />
+      <Space style={{ marginBottom: 16 }}>
+        <Button onClick={() => handleFilterChange('전체')}>전체</Button>
+        <Button onClick={() => handleFilterChange('첫방문')}>첫방문</Button>
+        <Button onClick={() => handleFilterChange('예비 단골')}>예비 단골</Button>
+        <Button onClick={() => handleFilterChange('단골')}>단골</Button>
+        <Button onClick={() => handleFilterChange('뜸한 고객')}>뜸한 고객</Button>
+      </Space>
+      <Table columns={columns} dataSource={filteredCustomers} rowKey="id" />
     </div>
   );
 };
