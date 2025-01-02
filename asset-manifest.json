@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/mangeOms/static/css/main.22b2588c.css",
+    "main.js": "/mangeOms/static/js/main.dac6d3d1.js",
+    "index.html": "/mangeOms/index.html",
+    "main.22b2588c.css.map": "/mangeOms/static/css/main.22b2588c.css.map",
+    "main.dac6d3d1.js.map": "/mangeOms/static/js/main.dac6d3d1.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.22b2588c.css",
+    "static/js/main.dac6d3d1.js"
+  ]
+}
