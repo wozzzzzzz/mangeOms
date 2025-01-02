@@ -154,7 +154,7 @@ function OrderModal({ show, onClose, selectedDate, order, isEdit, dispatch }) {
             </svg>
           </button>
         </div>
-        <div className='modal-subText'>주문자 ��름과 전화번호는 꼭 남겨주세요!</div>
+        <div className='modal-subText'>주문자 이름과 전화번호는 꼭 남겨주세요!</div>
         <div className="modal-body">
           <form>
           {/* 주문자 정보 필드 */}

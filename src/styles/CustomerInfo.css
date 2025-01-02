@@ -1,0 +1,71 @@
+.customer-info-container {
+  margin: 0 80px;
+}
+
+.customer-info-title {
+  margin-bottom: 26px;
+  margin-top: 26px;
+  color: #2D2E30;
+    font-family: Pretendard;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 142.9%; /* 57.16px */
+    letter-spacing: -0.8px;
+}
+
+.search-filter-container {
+  margin-bottom: 16px;
+}
+
+.customer-info-container .search-bar-container {
+  padding: 0;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-button {
+  display: flex;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 24px;
+  background: rgba(78, 89, 104, 0.12);
+  border: none;
+  color: #4E5968;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background: rgba(78, 89, 104, 0.2);
+}
+
+.filter-button.active {
+  background: #4E5968;
+  color: white;
+}
+
+.customer-table .ant-table-thead > tr > th {
+  background: #F2F4F6;
+  color: #4E5968;
+  font-family: Pretendard;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 16px 24px;
+}
+
+.customer-table .ant-table-tbody > tr > td {
+  padding: 24px;
+}
+
+.customer-table .ant-table-tbody > tr:hover > td {
+  background: #F8F9FA;
+} 

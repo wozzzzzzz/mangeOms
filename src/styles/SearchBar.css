@@ -5,7 +5,7 @@
 
 .search-wrapper {
   position: relative;
-  max-width: 500px;
+  max-width: 100%;
 }
 
 .search-input {

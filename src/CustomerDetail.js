@@ -81,7 +81,44 @@ const CustomerDetail = () => {
       <button onClick={() => navigate(-1)} className="back-button">뒤로가기</button>
       <div className="customer-header">
         <div className="customer-info">
-          <h2>{customer.name} {customer.phone}</h2>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'  // 각 항목 사이 간격
+          }}>
+            <div style={{
+              color: '#2D2E30',
+              fontFamily: 'Pretendard',
+              fontSize: '24px',
+              fontWeight: '600',
+              lineHeight: '142.9%',
+              letterSpacing: '-0.48px'
+            }}>
+              {customer.name}
+            </div>
+            
+            <div style={{
+              color: '#4E5968',
+              fontFamily: 'Pretendard',
+              fontSize: '20px',
+              fontWeight: '500',
+              lineHeight: '142.9%',
+              letterSpacing: '-0.4px'
+            }}>
+              {customer.phone}
+            </div>
+            
+            <div style={{
+              color: '#4E5968',
+              fontFamily: 'Pretendard',
+              fontSize: '16px',
+              fontWeight: '400',
+              lineHeight: '142.9%',
+              letterSpacing: '-0.32px'
+            }}>
+              {customer.classification}  {/* 첫방문/단골/뜸한 고객 등 분류 */}
+            </div>
+          </div>
           <p>총 {customer.visitCount}회 방문, 노쇼 {customer.noShowCount}회</p>
         </div>
         <button className="edit-button">정보 수정</button>
